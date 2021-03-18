@@ -2,9 +2,6 @@ package by.htp.task05.repository;
 
 import java.util.Map;
 
-/**
- * @author andrey.semenov
- */
 public class RepositoryEntry {
 
   public RepositoryEntry(String name, Map<String, String> features){
