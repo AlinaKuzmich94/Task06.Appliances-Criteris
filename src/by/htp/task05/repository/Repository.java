@@ -1,60 +1,70 @@
 package by.htp.task05.repository;
 
-	import java.io.BufferedReader;
-	import java.io.File;
-	import java.io.FileReader;
-	import java.io.IOException;
-	import java.net.URISyntaxException;
-	import java.util.ArrayList;
-	import java.util.HashMap;
-	import java.util.List;
-	import java.util.Map;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-	public class Repository {
+public class Repository {
 
+  public static final String RESOURCES = "resources/111.txt";
+  private static List<RepositoryEntry> applianceStructure;
 
-		public static Map<String, Map<String, String>> applianceStructure;
+  private static Repository instance;
 
-		public List<String>  findAppliancesByNameAndProperty(Map<String, String> filterParameters){
-	        Map<String, Map<String, String>> applianceStructure = DBReader.getApplianceStructure();
+  public static synchronized Repository getInstance() {
+    if (instance == null) {
+      instance = new Repository();
+    }
+    return instance;
+  }
 
-	        List<Map<String, String>> results = new ArrayList<>();
-	        for (Map.Entry<String, String> entry : filterParameters.entrySet()) {
+  private Repository() {
+    readFromDB();
+  }
 
-	            String key = entry.getKey();
-	            if (key.equals("name")) {
-	                results.add(applianceStructure.get(entry.getValue()));
-	            }
-	        }
+  private void readFromDB() {
 
-	        for(Map<String, String> result : results) {
+    ClassLoader classLoader = getClass().getClassLoader();
+    File file = new File(classLoader.getResource(RESOURCES).getFile());
 
-	            if (result ){
-	            for (Map.Entry<String, String> entry : result.entrySet()) {
+    List<RepositoryEntry> appliance = new ArrayList<>();
 
-	                boolean exist = true;
-	                for (Map.Entry<String, String> filterEntry : filterParameters.entrySet()) {
-	                    if (entry.entry.getKey(filterEntry.getKey()))
-	                }
-	            }
-	            }
-	        }
+    try (BufferedReader br =
+           new BufferedReader(new FileReader(file))) {
 
-	        applianceStructure.
-	    }
+      String line;
+      while ((line = br.readLine()) != null) {
 
+        Map<String, String> valueMap = new HashMap<>();
+        String[] splitLine = line.split(":");
 
-	    public List<String> intersection(List<String> list1, List<String> list2) {
-	        List<String> list = new ArrayList<>();
+        if (splitLine.length > 1) {
 
-	        for (String t : list1) {
-	            if(list2.contains(t)) {
-	                list.add(t);
-	            }
-	        }
+          String key = splitLine[0];
 
-	        return list;
-	    }
+          for (String keyValue : splitLine[1].split("\\,")) {
 
-	}
+            String[] keyValueArr = keyValue.split("=");
 
+            if (keyValueArr.length > 1) {
+              valueMap.put(keyValueArr[0].trim(), keyValueArr[1].trim());
+            }
+          }
+          appliance.add(new RepositoryEntry(key.trim(), valueMap));
+        }
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    applianceStructure = appliance;
+  }
+
+  public static List<RepositoryEntry> getApplianceStructure() {
+    return applianceStructure;
+  }
+}
