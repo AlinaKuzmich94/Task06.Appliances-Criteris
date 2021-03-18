@@ -2,6 +2,7 @@ package by.htp.task05.repository;
 
 import java.util.Map;
 
+
 public class RepositoryEntry {
 
   public RepositoryEntry(String name, Map<String, String> features){
